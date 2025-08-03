@@ -25,16 +25,16 @@
 
 ```mermaid
 graph TD
-    subgraph "사용자 요청 흐름"
-        A[사용자 (Local Machine)] --> B{kubectl port-forward 8080:80}
+    subgraph "User Request Flow"
+        A[User (Local Machine)] --> B{kubectl port-forward 8080:80}
         B --> C[Ingress Controller]
         C -- "Ingress Rule" --> D(Service: my-nest-app)
         D -- "Load Balances" --> E[Pod: my-nest-app]
         E -- "Container Port 3000" --> F[Container: NestJS App]
     end
 
-    subgraph "파드 배포 흐름"
-        G[사용자/컨트롤러] -- "kubectl apply (Deployment)" --> H(Kube-apiserver)
+    subgraph "Pod Deployment Flow"
+        G[User/Controller] -- "kubectl apply (Deployment)" --> H(Kube-apiserver)
         H -- "Stores State" --> I[etcd]
         H -- "Notifies" --> J[Kube-scheduler]
         J -- "Schedules Pod" --> K[Kubelet (on Worker Node)]
@@ -43,7 +43,7 @@ graph TD
         K -- "Reports Status" --> H
     end
 
-    subgraph "네트워크 프록시"
+    subgraph "Network Proxy"
         M[Kube-proxy (on Worker Node)] -- "Manages Network Rules" --> E
     end
 
