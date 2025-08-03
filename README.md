@@ -27,6 +27,7 @@
 *   **[6단계: 데이터 영속성 (PV & PVC)](./guides/06-persistence-pv-pvc.md)**
 *   **[7단계: 설정 관리 (환경 변수, ConfigMap, Secret)](./guides/08-config-and-secrets.md)**
 *   **[8단계: RBAC 심화 학습](./guides/09-rbac-deep-dive.md)**
+*   **[9단계: 쿠버네티스 코어 컴포넌트 흐름 이해하기](./guides/10-core-components-flow.md)**
 *   **[개념 정리: 쿠버네티스 핵심 요소 다시보기](./guides/07-core-concepts-deep-dive.md)** 👈 **마지막에 읽어보세요!**
 
 ---
