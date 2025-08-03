@@ -25,26 +25,26 @@
 
 ```mermaid
 graph TD
-    subgraph "사용자 요청 흐름"
-        A[사용자] -- "1. 요청" --> B{kubectl 포트 포워딩}
-        B -- "2. 포워딩" --> C[인그레스 컨트롤러]
-        C -- "3. 인그레스 규칙" --> D(서비스: my-nest-app)
-        D -- "4. 로드 밸런싱" --> E[파드: my-nest-app]
-        E -- "5. 컨테이너 포트 3000" --> F[컨테이너: NestJS 앱]
+    subgraph "User Request Flow"
+        A[User] -- "1. Request" --> B{kubectl port-forward}
+        B -- "2. Forward" --> C[Ingress Controller]
+        C -- "3. Ingress Rule" --> D(Service: my-nest-app)
+        D -- "4. Load Balance" --> E[Pod: my-nest-app]
+        E -- "5. Container Port 3000" --> F[Container: NestJS App]
     end
 
-    subgraph "파드 배포 흐름"
-        G[사용자/컨트롤러] -- "1. kubectl apply (디플로이먼트)" --> H(쿠버네티스 API 서버)
-        H -- "2. 상태 저장" --> I[etcd]
-        H -- "3. 알림" --> J[쿠버네티스 스케줄러]
-        J -- "4. 파드 스케줄링" --> K[쿠블렛 (워커 노드)]
-        K -- "5. 컨테이너 관리" --> L[컨테이너 런타임]
-        L -- "6. 실행" --> E
-        K -- "7. 상태 보고" --> H
+    subgraph "Pod Deployment Flow"
+        G[User/Controller] -- "1. kubectl apply (Deployment)" --> H(Kube-apiserver)
+        H -- "2. Stores State" --> I[etcd]
+        H -- "3. Notifies" --> J[Kube-scheduler]
+        J -- "4. Schedules Pod" --> K[Kubelet on Worker Node]
+        K -- "5. Manages Container" --> L[Container Runtime]
+        L -- "6. Runs" --> E
+        K -- "7. Reports Status" --> H
     end
 
-    subgraph "네트워크 프록시"
-        M[쿠버네티스 프록시 (워커 노드)] -- "1. 네트워크 규칙 관리" --> E
+    subgraph "Network Proxy"
+        M[Kube-proxy on Worker Node] -- "1. Manages Network Rules" --> E
     end
 
     style A fill:#f9f7d9,stroke:#333,stroke-width:2px
@@ -66,21 +66,21 @@ graph TD
 
 #### 1. 애플리케이션 배포 과정
 
-1.  **`kubectl apply` (또는 `helm install/upgrade`)**: 사용자가 `Deployment`와 같은 리소스 정의를 `kube-apiserver`에 제출합니다. (다이어그램의 **파드 배포 흐름 - 1. kubectl apply (디플로이먼트) 화살표**) 
-2.  **`Kube-apiserver`**: 이 요청을 받아 유효성을 검사하고, 클러스터의 상태를 저장하는 `etcd`에 해당 정보를 기록합니다. (다이어그램의 **파드 배포 흐름 - 2. 상태 저장 화살표**) 
-3.  **`Kube-controller-manager`**: `Deployment` 컨트롤러는 `kube-apiserver`를 통해 새로운 `Deployment`가 생성된 것을 감지하고, 원하는 파드 개수를 유지하기 위해 `ReplicaSet`을 생성합니다. (다이어그램에 직접 표시되지는 않지만, `사용자/컨트롤러`가 `Deployment`를 생성하면 `Kube-controller-manager`가 `ReplicaSet`을 관리합니다.)
-4.  **`Kube-scheduler`**: `kube-apiserver`를 통해 새로 생성된 파드(아직 노드에 할당되지 않은)를 감지합니다. 스케줄러는 클러스터 내의 노드 상태(CPU, 메모리 가용량 등)를 고려하여 파드를 실행할 최적의 워커 노드를 선택하고, 이 정보를 `kube-apiserver`에 업데이트합니다. (다이어그램의 **파드 배포 흐름 - 3. 알림 화살표**) 
-5.  **`Kubelet`**: 파드가 할당된 워커 노드에서 실행되는 `kubelet`은 `kube-apiserver`를 통해 자신에게 할당된 파드가 있음을 감지합니다. `kubelet`은 해당 파드의 컨테이너를 실행하기 위해 노드의 `Container Runtime`에 지시합니다. (다이어그램의 **파드 배포 흐름 - 4. 파드 스케줄링 화살표**)
-6.  **`Container Runtime`**: `kubelet`의 지시에 따라 Docker와 같은 컨테이너 런타임은 파드 내의 컨테이너 이미지를 다운로드하고 실행합니다. (다이어그램의 **파드 배포 흐름 - 5. 컨테이너 관리 화살표**)
-7.  **`Kubelet` (상태 보고)**: `kubelet`은 파드의 실행 상태(Running, Ready 등)를 지속적으로 모니터링하고, 이 상태 정보를 `kube-apiserver`에 보고하여 `etcd`에 반영되도록 합니다. (다이어그램의 **파드 배포 흐름 - 7. 상태 보고 화살표**) 
+1.  **`kubectl apply` (또는 `helm install/upgrade`)**: 사용자가 `Deployment`와 같은 리소스 정의를 `kube-apiserver`에 제출합니다. (다이어그램의 **Pod Deployment Flow - 1. kubectl apply (Deployment) 화살표**) 
+2.  **`Kube-apiserver`**: 이 요청을 받아 유효성을 검사하고, 클러스터의 상태를 저장하는 `etcd`에 해당 정보를 기록합니다. (다이어그램의 **Pod Deployment Flow - 2. Stores State 화살표**) 
+3.  **`Kube-controller-manager`**: `Deployment` 컨트롤러는 `kube-apiserver`를 통해 새로운 `Deployment`가 생성된 것을 감지하고, 원하는 파드 개수를 유지하기 위해 `ReplicaSet`을 생성합니다. (다이어그램에 직접 표시되지는 않지만, `User/Controller`가 `Deployment`를 생성하면 `Kube-controller-manager`가 `ReplicaSet`을 관리합니다.)
+4.  **`Kube-scheduler`**: `kube-apiserver`를 통해 새로 생성된 파드(아직 노드에 할당되지 않은)를 감지합니다. 스케줄러는 클러스터 내의 노드 상태(CPU, 메모리 가용량 등)를 고려하여 파드를 실행할 최적의 워커 노드를 선택하고, 이 정보를 `kube-apiserver`에 업데이트합니다. (다이어그램의 **Pod Deployment Flow - 3. Notifies 화살표**) 
+5.  **`Kubelet`**: 파드가 할당된 워커 노드에서 실행되는 `kubelet`은 `kube-apiserver`를 통해 자신에게 할당된 파드가 있음을 감지합니다. `kubelet`은 해당 파드의 컨테이너를 실행하기 위해 노드의 `Container Runtime`에 지시합니다. (다이어그램의 **Pod Deployment Flow - 4. Schedules Pod 화살표**)
+6.  **`Container Runtime`**: `kubelet`의 지시에 따라 Docker와 같은 컨테이너 런타임은 파드 내의 컨테이너 이미지를 다운로드하고 실행합니다. (다이어그램의 **Pod Deployment Flow - 5. Manages Container 화살표**)
+7.  **`Kubelet` (상태 보고)**: `kubelet`은 파드의 실행 상태(Running, Ready 등)를 지속적으로 모니터링하고, 이 상태 정보를 `kube-apiserver`에 보고하여 `etcd`에 반영되도록 합니다. (다이어그램의 **Pod Deployment Flow - 7. Reports Status 화살표**) 
 
 #### 2. 외부에서 애플리케이션 접근 과정
 
-1.  **사용자 요청**: 사용자가 웹 브라우저나 `curl`을 통해 `http://my-nest-app.local:8080`과 같은 주소로 요청을 보냅니다. (다이어그램의 **사용자 요청 흐름 - 1. 요청 화살표**) 
-2.  **`kubectl port-forward`**: 로컬 머신의 8080번 포트로 들어온 요청은 `kubectl port-forward` 명령에 의해 쿠버네티스 클러스터 내부의 Ingress Controller 파드의 80번 포트로 전달됩니다. (다이어그램의 **사용자 요청 흐름 - 2. 포워딩 화살표**) 
-3.  **`Ingress Controller`**: Ingress Controller는 요청을 받아 `Ingress` 리소스에 정의된 규칙을 확인합니다. 요청의 `Host` 헤더(`my-nest-app.local`)와 경로(`/`)를 기반으로 어떤 서비스로 요청을 라우팅할지 결정합니다. (다이어그램의 **사용자 요청 흐름 - 3. 인그레스 규칙 화살표**) 
-4.  **`Kube-proxy`**: 각 워커 노드에서 실행되는 `kube-proxy`는 `Service`에 대한 네트워크 규칙을 관리합니다. Ingress Controller가 특정 `Service`로 요청을 보내면, `kube-proxy`는 해당 `Service`에 속한 파드들 중 하나로 요청을 로드 밸런싱하여 전달합니다. (다이어그램의 **사용자 요청 흐름 - 4. 로드 밸런싱 화살표**) 
-5.  **애플리케이션 파드**: 최종적으로 요청은 `my-nest-app` 파드 내의 NestJS 앱 컨테이너에 도달하고, 앱은 요청을 처리한 후 응답을 반환합니다. 응답은 역순으로 Ingress Controller를 거쳐 사용자에게 전달됩니다. (다이어그램의 **사용자 요청 흐름 - 5. 컨테이너 포트 3000 화살표**) 
+1.  **사용자 요청**: 사용자가 웹 브라우저나 `curl`을 통해 `http://my-nest-app.local:8080`과 같은 주소로 요청을 보냅니다. (다이어그램의 **User Request Flow - 1. Request 화살표**) 
+2.  **`kubectl port-forward`**: 로컬 머신의 8080번 포트로 들어온 요청은 `kubectl port-forward` 명령에 의해 쿠버네티스 클러스터 내부의 Ingress Controller 파드의 80번 포트로 전달됩니다. (다이어그램의 **User Request Flow - 2. Forward 화살표**) 
+3.  **`Ingress Controller`**: Ingress Controller는 요청을 받아 `Ingress` 리소스에 정의된 규칙을 확인합니다. 요청의 `Host` 헤더(`my-nest-app.local`)와 경로(`/`)를 기반으로 어떤 서비스로 요청을 라우팅할지 결정합니다. (다이어그램의 **User Request Flow - 3. Ingress Rule 화살표**) 
+4.  **`Kube-proxy`**: 각 워커 노드에서 실행되는 `kube-proxy`는 `Service`에 대한 네트워크 규칙을 관리합니다. Ingress Controller가 특정 `Service`로 요청을 보내면, `kube-proxy`는 해당 `Service`에 속한 파드들 중 하나로 요청을 로드 밸런싱하여 전달합니다. (다이어그램의 **User Request Flow - 4. Load Balance 화살표**) 
+5.  **애플리케이션 파드**: 최종적으로 요청은 `my-nest-app` 파드 내의 NestJS 앱 컨테이너에 도달하고, 앱은 요청을 처리한 후 응답을 반환합니다. 응답은 역순으로 Ingress Controller를 거쳐 사용자에게 전달됩니다. (다이어그램의 **User Request Flow - 5. Container Port 3000 화살표**) 
 
 ---
 
