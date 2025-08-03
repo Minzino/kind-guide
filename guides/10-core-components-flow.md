@@ -25,41 +25,7 @@
 
 ```mermaid
 graph TD
-    subgraph "User Request Flow"
-        A[User (Local Machine)] --> B{kubectl port-forward 8080:80}
-        B --> C[Ingress Controller]
-        C -- "Ingress Rule" --> D(Service: my-nest-app)
-        D -- "Load Balances" --> E[Pod: my-nest-app]
-        E -- "Container Port 3000" --> F[Container: NestJS App]
-    end
-
-    subgraph "Pod Deployment Flow"
-        G[User/Controller] -- "kubectl apply (Deployment)" --> H(Kube-apiserver)
-        H -- "Stores State" --> I[etcd]
-        H -- "Notifies" --> J[Kube-scheduler]
-        J -- "Schedules Pod" --> K[Kubelet (on Worker Node)]
-        K -- "Manages Container" --> L[Container Runtime]
-        L -- "Runs" --> E
-        K -- "Reports Status" --> H
-    end
-
-    subgraph "Network Proxy"
-        M[Kube-proxy (on Worker Node)] -- "Manages Network Rules" --> E
-    end
-
-    style A fill:#f9f7d9,stroke:#333,stroke-width:2px
-    style B fill:#c2f0c2,stroke:#333,stroke-width:2px
-    style C fill:#add8e6,stroke:#333,stroke-width:2px
-    style D fill:#add8e6,stroke:#333,stroke-width:2px
-    style E fill:#d3f8d3,stroke:#333,stroke-width:2px
-    style F fill:#d3f8d3,stroke:#333,stroke-width:2px
-    style G fill:#f9f7d9,stroke:#333,stroke-width:2px
-    style H fill:#add8e6,stroke:#333,stroke-width:2px
-    style I fill:#add8e6,stroke:#333,stroke-width:2px
-    style J fill:#add8e6,stroke:#333,stroke-width:2px
-    style K fill:#90ee90,stroke:#333,stroke-width:2px
-    style L fill:#90ee90,stroke:#333,stroke-width:2px
-    style M fill:#90ee90,stroke:#333,stroke-width:2px
+    A[Start] --> B[End]
 ```
 
 ### 단계별 흐름 설명
