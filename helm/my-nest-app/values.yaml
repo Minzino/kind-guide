@@ -1,0 +1,35 @@
+# Default values for my-nest-app.
+
+replicaCount: 1
+
+image:
+  repository: my-nest-app
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "1.0.0"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  hosts:
+    - host: my-nest-app.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+persistence:
+  enabled: false
+  size: 10Mi
+  storageClassName: "standard" # kind의 기본 스토리지 클래스
+
+env:
+  myEnvVar: "This is my custom environment variable from Helm!"
+
+configMap:
+  appConfig: "This is a configuration from ConfigMap."
+
+secret:
+  apiKey: "supersecretapikey123"

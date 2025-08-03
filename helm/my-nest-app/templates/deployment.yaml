@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      {{- if .Values.persistence.enabled }}
+      initContainers:
+        - name: volume-permissions
+          image: busybox:1.36
+          command: ["sh", "-c", "chmod -R 777 /data"]
+          volumeMounts:
+            - name: data-volume
+              mountPath: /data
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: MY_ENV_VAR
+              value: {{ .Values.env.myEnvVar | quote }}
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+            - name: secret-volume
+              mountPath: /etc/secrets
+          {{- if .Values.persistence.enabled }}
+            - name: data-volume
+              mountPath: /data
+          {{- end }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ .Release.Name }}-config
+        - name: secret-volume
+          secret:
+            secretName: {{ .Release.Name }}-secret
+      {{- if .Values.persistence.enabled }}
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc
+      {{- end }}
+      serviceAccountName: {{ .Release.Name }}-sa

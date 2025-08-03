@@ -1,0 +1,8 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Name }}-configmap-reader
+rules:
+- apiGroups: [""] # ""는 core API group을 의미합니다.
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]

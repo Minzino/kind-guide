@@ -1,0 +1,18 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  # 1. Control Plane 노드 설정
+  - role: control-plane
+    # Ingress-NGINX를 위한 설정
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
+
+  # 2. Worker 노드 설정 (1)
+  - role: worker
+
+  # 3. Worker 노드 설정 (2)
+  - role: worker
